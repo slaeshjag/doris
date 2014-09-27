@@ -21,9 +21,20 @@ public class DorisWindow : Gtk.Window {
 		this.nav.changed_uri(new_uri);
 	}
 
+	private void goto_uri(string new_uri) {
+		this.webview.go_uri(new_uri);
+	}
+
+	private void toggle_hide_nav() {
+		this.nav.visible = !this.nav.visible;
+		if (this.nav.visible)
+			this.nav.gain_focus();
+	}
+
 	private void add_accelerators() {
 		this.acc.connect(Gdk.keyval_from_name("L"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => webview.go_forward());
 		this.acc.connect(Gdk.keyval_from_name("H"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => webview.go_back());
+		this.acc.connect(Gdk.keyval_from_name("G"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.toggle_hide_nav(); return false;});
 	}
 
 	public DorisWindow() {
@@ -50,5 +61,6 @@ public class DorisWindow : Gtk.Window {
 		this.add_accel_group(this.acc);
 		this.add_accelerators();
 		this.webview.title_changed.connect(set_window_title);
+		this.nav.goto_uri.connect(goto_uri);
 	}
 }

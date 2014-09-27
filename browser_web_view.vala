@@ -17,12 +17,24 @@ public class BrowserWebView : Gtk.ScrolledWindow {
 		return true;
 	}
 
+	public void go_uri(string uri) {
+		this.webview.load_uri(uri);
+	}
+
 	private void new_title(string title) {
 		this.title_changed(title);
 	}
 
-	private void changed_uri(WebKit.WebFrame wf) {
+	private void load_commit(WebKit.WebFrame wf) {
 		this.new_uri(wf.uri);
+		return;
+	}
+
+	private bool navigate_policy(WebKit.WebFrame frame, WebKit.NetworkRequest req, WebKit.WebNavigationAction action, WebKit.WebPolicyDecision dec) {
+		if (action.reason == WebKit.WebNavigationReason.LINK_CLICKED)
+			return false;
+	//	this.new_uri(req.uri);
+		return false;
 	}
 
 	public BrowserWebView() {
@@ -34,7 +46,8 @@ public class BrowserWebView : Gtk.ScrolledWindow {
 
 		this.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC);
 		this.webview = new WebKit.WebView();
-		this.webview.load_started.connect(this.changed_uri);
+		this.webview.navigation_policy_decision_requested.connect(this.navigate_policy);
+		this.webview.load_committed.connect(this.load_commit);
 		this.add(this.webview);
 		this.show_all();
 
