@@ -5,6 +5,10 @@ public class DorisWindow : Gtk.Window {
 	Gtk.VBox vbox;
 	DorisNavigate nav;
 
+	public WebKit.WebView get_webview() {
+		return this.webview.get_webview();
+	}
+
 	private void destroy_handle() {
 		this.count--;
 	
@@ -31,10 +35,25 @@ public class DorisWindow : Gtk.Window {
 			this.nav.gain_focus();
 	}
 
+	private void clipboard_push_uri() {
+		string uri = this.webview.hover_uri;
+		Gtk.Clipboard cb;
+
+		if (uri == null)
+			uri = this.webview.get_uri();
+		cb = Gtk.Clipboard.get_for_display(Gdk.Display.get_default(), Gdk.Atom.intern("PRIMARY", true));
+		cb.set_text(uri, -1);
+		cb = Gtk.Clipboard.get_for_display(Gdk.Display.get_default(), Gdk.Atom.intern("CLIPBOARD", true));
+		cb.set_text(uri, -1);
+		cb.store();
+	}
+		
+
 	private void add_accelerators() {
 		this.acc.connect(Gdk.keyval_from_name("L"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => webview.go_forward());
 		this.acc.connect(Gdk.keyval_from_name("H"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => webview.go_back());
 		this.acc.connect(Gdk.keyval_from_name("G"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.toggle_hide_nav(); return false;});
+		this.acc.connect(Gdk.keyval_from_name("Y"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.clipboard_push_uri(); return false;});
 	}
 
 	public DorisWindow() {

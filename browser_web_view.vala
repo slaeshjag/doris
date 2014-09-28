@@ -2,6 +2,7 @@ public class BrowserWebView : Gtk.ScrolledWindow {
 	private WebKit.WebView webview;
 	private Soup.CookieJar cookies;
 	private string home_subdir;
+	public string hover_uri;
 	
 	public signal void title_changed(string title);
 	public signal void new_uri(string uri);
@@ -21,6 +22,10 @@ public class BrowserWebView : Gtk.ScrolledWindow {
 		this.webview.load_uri(uri);
 	}
 
+	public string get_uri() {
+		return this.webview.get_main_frame().uri;
+	}
+
 	private void new_title(string title) {
 		this.title_changed(title);
 	}
@@ -30,12 +35,19 @@ public class BrowserWebView : Gtk.ScrolledWindow {
 		return;
 	}
 
-	private bool navigate_policy(WebKit.WebFrame frame, WebKit.NetworkRequest req, WebKit.WebNavigationAction action, WebKit.WebPolicyDecision dec) {
-		if (action.reason == WebKit.WebNavigationReason.LINK_CLICKED)
-			return false;
-	//	this.new_uri(req.uri);
-		return false;
+	private WebKit.WebView open_new_window(WebKit.WebFrame wf) {
+		DorisWindow win = new DorisWindow();
+		return win.get_webview();
 	}
+
+	private void link_hover(string? title, string? uri) {
+		this.hover_uri = uri;
+	}
+
+	public WebKit.WebView get_webview() {
+		return this.webview;
+	}
+
 
 	public BrowserWebView() {
 		this.home_subdir = DorisConfig.get_dir();
@@ -46,8 +58,9 @@ public class BrowserWebView : Gtk.ScrolledWindow {
 
 		this.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC);
 		this.webview = new WebKit.WebView();
-		this.webview.navigation_policy_decision_requested.connect(this.navigate_policy);
 		this.webview.load_committed.connect(this.load_commit);
+		this.webview.create_web_view.connect(open_new_window);
+		this.webview.hovering_over_link.connect(link_hover);
 		this.add(this.webview);
 		this.show_all();
 

@@ -17,6 +17,6 @@ public class DorisNavigate : Gtk.HBox {
 		this.uri_field = new Gtk.Entry();
 		this.add(this.uri_field);
 		this.uri_field.activate.connect(() => this.goto_uri(this.uri_field.buffer.text));
-//		this.HBox(false, 5);
+		this.uri_field.grab_focus();
 	}
 }
