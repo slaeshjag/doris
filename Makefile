@@ -1,5 +1,5 @@
-VALAPKG	=	--pkg gdk-2.0 --pkg gtk+-2.0 --pkg webkit-1.0 --pkg libsoup-2.4
-SRC	=	browser_web_view.vala doris_window.vala doris.vala doris_config.vala doris_navigate.vala
+VALAPKG	=	--pkg gdk-3.0 --pkg gtk+-3.0 --pkg webkit2gtk-4.0 --pkg libsoup-2.4 --pkg libnotify
+SRC	=	browser_web_view.vala doris_window.vala doris.vala doris_config.vala doris_navigate.vala doris_download.vala
 BIN	=	doris.elf
 VALAC	:=	valac
 VALAFLAG=	-X -w
