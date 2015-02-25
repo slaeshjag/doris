@@ -1,11 +1,28 @@
 public class DorisWindow : Gtk.Window {
 	static uint count = 0;
+	static uint id_count = 0;
+
+	uint id;
+	bool insecure;
+	bool ssl;
 	BrowserWebView webview;
 	public Gtk.AccelGroup acc;
 	Gtk.VBox vbox;
 	Gtk.HBox hbox;
 	DorisNavigate nav;
 	DorisDownloadList ddl;
+	DorisProgressBar pb;
+	static List<DorisWindow> windows = null;
+
+	public static DorisWindow? find_window(uint id) {
+		DorisWindow result = null;
+		windows.foreach((entry) => {
+			if (entry.id == id)
+				result = entry;
+		});
+		
+		return result;
+	}
 
 	public WebKit.WebView get_webview() {
 		return this.webview.get_webview();
@@ -13,6 +30,7 @@ public class DorisWindow : Gtk.Window {
 
 	private void destroy_handle() {
 		DorisWindow.count--;
+		DorisWindow.windows.remove(this);
 	
 		if (DorisWindow.count == 0) {
 			Gtk.main_quit();
@@ -32,7 +50,7 @@ public class DorisWindow : Gtk.Window {
 
 	}
 
-	private void goto_uri(string new_uri) {
+	public void goto_uri(string new_uri) {
 		this.webview.go_uri(new_uri);
 	}
 
@@ -42,9 +60,71 @@ public class DorisWindow : Gtk.Window {
 			this.nav.gain_focus();
 	}
 
+	private Gdk.FilterReturn gdk_handle_filter(Gdk.XEvent xe, Gdk.Event ge) {
+		X.Event *e = (void *) xe;
+		X.Atom type;
+		int format;
+		ulong nitems, bytes;
+		unowned string *data;
+		string atom_value;
+		void *vptr;
+
+
+		if (e->type == X.EventType.PropertyNotify) {
+			if (Gdk.X11.get_xatom_name(e->xproperty.atom) == "_DORIS_URI_GO") {
+				Gdk.X11.get_default_xdisplay().get_window_property(Gdk.X11Window.get_xid(this.get_window()), e->xproperty.atom, 0, 512, false, X.XA_STRING, out type, out format, out nitems, out bytes, out vptr);
+				if (vptr == null)
+					return Gdk.FilterReturn.CONTINUE;
+				data = vptr;
+				atom_value = data;
+				this.goto_uri(atom_value);
+			}
+		}
+
+		return Gdk.FilterReturn.CONTINUE;
+	}
+
+	private void reset_progressbar(WebKit.LoadEvent le) {
+		if (le == WebKit.LoadEvent.STARTED || le == WebKit.LoadEvent.REDIRECTED) {
+			this.insecure = false;
+			this.ssl = false;
+			this.pb.set_fraction(0.0f);
+			this.pb.set_ssl(false, false);
+		} else if (le == WebKit.LoadEvent.COMMITTED) {
+			TlsCertificate cert;
+			TlsCertificateFlags errors;
+
+			if (!this.get_webview().get_tls_info(out cert, out errors))
+				this.ssl = false;
+			else
+				this.ssl = ((errors & TlsCertificateFlags.VALIDATE_ALL) == 0);
+		}
+			
+		
+		fraction_changed();
+	}
+
+	private void insecure_content(WebKit.InsecureContentEvent event) {
+		this.insecure = true;
+	}
+
+	private void res_load_started(WebKit.WebResource res, WebKit.URIRequest req) {
+		fraction_changed();
+	}
+
 	private void toggle_hide_download() {
 		this.ddl.visible = !this.ddl.visible;
 	}
+
+	private void fraction_changed() {
+		this.pb.set_ssl(this.ssl, !this.insecure);
+		this.pb.set_fraction((float) this.get_webview().estimated_load_progress);
+
+	}
+
+//	private void bad_cert() {
+//		this.
+//	}
 
 	private void clipboard_callback(Gtk.Clipboard cb, string? uri) {
 		Gtk.Clipboard ncb;
@@ -89,10 +169,15 @@ public class DorisWindow : Gtk.Window {
 		this.acc.connect(Gdk.keyval_from_name("Y"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.clipboard_push_uri(); return true;});
 		this.acc.connect(Gdk.keyval_from_name("P"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.clipboard_go_uri(); return true;});
 		this.acc.connect(Gdk.keyval_from_name("Q"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.toggle_hide_download(); return true;});
+		this.acc.connect(Gdk.keyval_from_name("P"), Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.SHIFT_MASK, Gtk.AccelFlags.VISIBLE, () => {this.webview.get_webview().run_javascript.begin("print();", null); return true;});
 	}
 
 	public DorisWindow() {
 		DorisWindow.count++;
+		this.id = DorisWindow.id_count++;
+		if (DorisWindow.windows == null)
+			DorisWindow.windows = new List<DorisWindow>();
+
 		this.webview = new BrowserWebView();
 		this.nav = new DorisNavigate();
 		this.webview.new_uri.connect(this.changed_uri);
@@ -113,6 +198,11 @@ public class DorisWindow : Gtk.Window {
 		this.vbox.add(this.hbox);
 		this.hbox.add(this.webview);
 		this.hbox.pack_start(this.ddl, false, true, 0);
+		
+		this.ddl.visible = false;
+		this.pb = new DorisProgressBar();
+		this.vbox.pack_start(this.pb, false, false, 0);
+
 		this.show_all();
 
 		this.acc = new Gtk.AccelGroup();
@@ -120,7 +210,12 @@ public class DorisWindow : Gtk.Window {
 		this.add_accelerators();
 		this.webview.title_changed.connect(set_window_title);
 		this.webview.new_download.connect(new_download);
+		this.get_webview().load_changed.connect(reset_progressbar);
+		this.get_webview().insecure_content_detected.connect(insecure_content);
+		this.get_webview().resource_load_started.connect(res_load_started);
 		this.nav.goto_uri.connect(goto_uri);
-		this.ddl.visible = false;
+		
+		DorisWindow.windows.append(this);
+		this.get_window().add_filter(gdk_handle_filter);
 	}
 }
