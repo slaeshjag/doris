@@ -199,11 +199,11 @@ public class DorisWindow : Gtk.Window {
 		this.hbox.add(this.webview);
 		this.hbox.pack_start(this.ddl, false, true, 0);
 		
-		this.ddl.visible = false;
 		this.pb = new DorisProgressBar();
 		this.vbox.pack_start(this.pb, false, false, 0);
 
 		this.show_all();
+		this.ddl.visible = false;
 
 		this.acc = new Gtk.AccelGroup();
 		this.add_accel_group(this.acc);
