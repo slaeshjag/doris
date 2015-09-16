@@ -50,6 +50,13 @@ public class DorisWindow : Gtk.Window {
 
 	}
 
+	private void refresh_page(bool cache) {
+		if (cache)
+			this.get_webview().reload();
+		else
+			this.get_webview().reload_bypass_cache();
+	}
+
 	public void goto_uri(string new_uri) {
 		this.webview.go_uri(new_uri);
 	}
@@ -165,6 +172,8 @@ public class DorisWindow : Gtk.Window {
 	private void add_accelerators() {
 		this.acc.connect(Gdk.keyval_from_name("L"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => webview.go_forward());
 		this.acc.connect(Gdk.keyval_from_name("H"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => webview.go_back());
+		this.acc.connect(Gdk.keyval_from_name("R"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.refresh_page(true); return true;});
+		this.acc.connect(Gdk.keyval_from_name("R"), Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.SHIFT_MASK, Gtk.AccelFlags.VISIBLE, () => {this.refresh_page(false); return true;});
 		this.acc.connect(Gdk.keyval_from_name("G"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.toggle_hide_nav(); return true;});
 		this.acc.connect(Gdk.keyval_from_name("Y"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.clipboard_push_uri(); return true;});
 		this.acc.connect(Gdk.keyval_from_name("P"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.clipboard_go_uri(); return true;});
