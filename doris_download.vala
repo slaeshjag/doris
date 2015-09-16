@@ -14,7 +14,8 @@ public class DorisDownload : Gtk.Frame {
 
 	Gtk.ProgressBar pbar;
 
-	
+	public signal void gain_focus();
+
 	private void download_failed(void *ptr) {
 		this.pbar.set_text("Failed");
 		this.failed = true;

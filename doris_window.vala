@@ -13,6 +13,7 @@ public class DorisWindow : Gtk.Window {
 	DorisSearch search;
 	DorisDownloadList ddl;
 	DorisProgressBar pb;
+	public static WebKit.UserContentManager ucm = null;
 	static List<DorisWindow> windows = null;
 
 	public static DorisWindow? find_window(uint id) {
@@ -62,10 +63,16 @@ public class DorisWindow : Gtk.Window {
 		this.webview.go_uri(new_uri);
 	}
 
+	private void focus_webview() {
+		this.get_webview().grab_focus();
+	}
+
 	private void toggle_hide_nav() {
 		this.nav.visible = !this.nav.visible;
 		if (this.nav.visible)
 			this.nav.gain_focus();
+		else
+			focus_webview();
 	}
 
 	private void search_string(string search) {
@@ -82,6 +89,7 @@ public class DorisWindow : Gtk.Window {
 
 	private void search_done() {
 		this.get_webview().get_find_controller().search_finish();
+		focus_webview();
 	}
 
 	private Gdk.FilterReturn gdk_handle_filter(Gdk.XEvent xe, Gdk.Event ge) {
@@ -194,12 +202,12 @@ public class DorisWindow : Gtk.Window {
 		this.acc.connect(Gdk.keyval_from_name("H"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => webview.go_back());
 		this.acc.connect(Gdk.keyval_from_name("R"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.refresh_page(true); return true;});
 		this.acc.connect(Gdk.keyval_from_name("R"), Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.SHIFT_MASK, Gtk.AccelFlags.VISIBLE, () => {this.refresh_page(false); return true;});
-		this.acc.connect(Gdk.keyval_from_name("G"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.toggle_hide_nav(); return true;});
+		this.acc.connect(Gdk.keyval_from_name("G"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.focus_webview(); this.toggle_hide_nav(); return true;});
 		this.acc.connect(Gdk.keyval_from_name("Y"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.clipboard_push_uri(); return true;});
 		this.acc.connect(Gdk.keyval_from_name("P"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.clipboard_go_uri(); return true;});
-		this.acc.connect(Gdk.keyval_from_name("Q"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.toggle_hide_download(); return true;});
+		this.acc.connect(Gdk.keyval_from_name("Q"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.focus_webview(); this.toggle_hide_download(); return true;});
 		this.acc.connect(Gdk.keyval_from_name("P"), Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.SHIFT_MASK, Gtk.AccelFlags.VISIBLE, () => {this.webview.get_webview().run_javascript.begin("print();", null); return true;});
-		this.acc.connect(Gdk.keyval_from_name("F"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.search.toggle_visible(); return true;});
+		this.acc.connect(Gdk.keyval_from_name("W"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.focus_webview(); this.search.toggle_visible(); return true;});
 		this.acc.connect(Gdk.keyval_from_name("J"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.search.search_prev(); return true;});
 		this.acc.connect(Gdk.keyval_from_name("K"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.search.search_next(); return true;});
 	}
@@ -207,8 +215,28 @@ public class DorisWindow : Gtk.Window {
 	public DorisWindow(string uri, WebKit.URIRequest? uri_req) {
 		DorisWindow.count++;
 		this.id = DorisWindow.id_count++;
-		if (DorisWindow.windows == null)
+		if (DorisWindow.windows == null) {
 			DorisWindow.windows = new List<DorisWindow>();
+		}
+
+		if (DorisWindow.ucm == null) {
+			DorisWindow.ucm = new WebKit.UserContentManager();
+			string early_script, late_script;
+
+			try {
+				FileUtils.get_contents(DorisConfig.get_path("early_script.js"), out early_script);
+				var euscr = new WebKit.UserScript(early_script, WebKit.UserContentInjectedFrames.TOP_FRAME, WebKit.UserScriptInjectionTime.START, null, null);
+				DorisWindow.ucm.add_script(euscr);
+			} catch (Error e) {
+			}
+
+			try {
+				FileUtils.get_contents(DorisConfig.get_path("late_script.js"), out late_script);
+				var luscr = new WebKit.UserScript(late_script, WebKit.UserContentInjectedFrames.TOP_FRAME, WebKit.UserScriptInjectionTime.END, null, null);
+				DorisWindow.ucm.add_script(luscr);
+			} catch (Error e) {
+			}
+		}
 
 		this.webview = new BrowserWebView(uri, uri_req);
 		this.nav = new DorisNavigate();
@@ -258,5 +286,9 @@ public class DorisWindow : Gtk.Window {
 		this.search.search_next.connect(this.search_next);
 		this.search.search_prev.connect(this.search_prev);
 		this.search.search_done.connect(this.search_done);
+
+		this.nav.lost_focus.connect(this.focus_webview);
+
+			
 	}
 }

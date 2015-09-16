@@ -101,7 +101,7 @@ public class BrowserWebView : Gtk.ScrolledWindow {
 		DirUtils.create(this.home_subdir, 0700);
 	
 		this.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC);
-		this.webview = new WebKit.WebView();
+		this.webview = new WebKit.WebView.with_user_content_manager(DorisWindow.ucm);
 		this.webview.web_context.get_cookie_manager().set_persistent_storage(Path.build_filename(this.home_subdir, "cookies.txt"), WebKit.CookiePersistentStorage.TEXT);
 		this.webview.load_changed.connect(this.load_commit);
 		this.webview.create.connect(open_new_window);

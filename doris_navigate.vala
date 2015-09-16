@@ -2,10 +2,14 @@ public class DorisNavigate : Gtk.Box {
 	Gtk.Entry uri_field;
 
 	public signal void goto_uri(string uri);
+	public signal void lost_focus();
 
 	public void changed_uri(string uri) {
 		this.uri_field.buffer.set_text(uri.data);
+		if (this.visible)
+			this.lost_focus();
 		this.visible = false;
+
 	}
 
 	public void gain_focus() {
