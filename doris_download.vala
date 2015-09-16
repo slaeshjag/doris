@@ -146,12 +146,12 @@ public class DorisDownload : Gtk.Frame {
 
 
 public class DorisDownloadList : Gtk.ScrolledWindow {
-	public Gtk.VBox vbox;
+	public Gtk.Box vbox;
 
 	public DorisDownloadList() {
 		Gtk.Label label = new Gtk.Label("Downloads");
 		this.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
-		this.vbox = new Gtk.VBox(false, 0);
+		this.vbox = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
 		this.add(this.vbox);
 		this.vbox.pack_start(label, false, false, 10);
 		this.show_all();
