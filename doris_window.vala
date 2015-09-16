@@ -92,6 +92,23 @@ public class DorisWindow : Gtk.Window {
 		focus_webview();
 	}
 
+	private void launch_mediaplayer(bool hover) {
+		string uri = null;
+		if (hover)
+			uri = this.webview.hover_uri;
+		if (uri == null)
+			uri = this.webview.get_uri();
+
+		try {
+			string args[2] = { "totem", null};
+			args[1] = uri;
+			Pid pid;
+			Process.spawn_async(null, args, null, SpawnFlags.SEARCH_PATH, null, out pid);
+		} catch (Error e) {
+			stderr.printf("Error: %s\n", e.message);
+		}
+	}
+
 	private Gdk.FilterReturn gdk_handle_filter(Gdk.XEvent xe, Gdk.Event ge) {
 		X.Event *e = (void *) xe;
 		X.Atom type;
@@ -210,6 +227,8 @@ public class DorisWindow : Gtk.Window {
 		this.acc.connect(Gdk.keyval_from_name("W"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.focus_webview(); this.search.toggle_visible(); return true;});
 		this.acc.connect(Gdk.keyval_from_name("J"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.search.search_prev(); return true;});
 		this.acc.connect(Gdk.keyval_from_name("K"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.search.search_next(); return true;});
+		this.acc.connect(Gdk.keyval_from_name("M"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.launch_mediaplayer(false); return true;});
+		this.acc.connect(Gdk.keyval_from_name("M"), Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.SHIFT_MASK, Gtk.AccelFlags.VISIBLE, () => {this.launch_mediaplayer(true); return true;});
 	}
 
 	public DorisWindow(string uri, WebKit.URIRequest? uri_req) {
