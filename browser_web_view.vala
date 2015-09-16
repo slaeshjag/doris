@@ -79,7 +79,7 @@ public class BrowserWebView : Gtk.ScrolledWindow {
 	}
 
 	private WebKit.WebView open_new_window(WebKit.NavigationAction na) {
-		DorisWindow win = new DorisWindow();
+		DorisWindow win = new DorisWindow(na.get_request().get_uri(), na.get_request());
 		return win.get_webview();
 	}
 
@@ -96,7 +96,7 @@ public class BrowserWebView : Gtk.ScrolledWindow {
 	}
 
 
-	public BrowserWebView() {
+	public BrowserWebView(string uri, WebKit.URIRequest? uri_req) {
 		this.home_subdir = DorisConfig.get_dir();
 		DirUtils.create(this.home_subdir, 0700);
 	
@@ -110,7 +110,11 @@ public class BrowserWebView : Gtk.ScrolledWindow {
 		this.add(this.webview);
 		this.show_all();
 
-		this.webview.load_uri("http://google.se");
+		if (uri_req != null) {
+			this.webview.load_request(uri_req);
+		} else {
+			this.webview.load_uri(uri);
+		}
 		this.webview.notify["title"].connect((s, p) => {
 			new_title(null);
 		});

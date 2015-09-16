@@ -2,7 +2,7 @@ void main(string[] args) {
 	DorisWindow win;
 	Gtk.init(ref args);
 	Notify.init("Doris");
-	win = new DorisWindow();
+	win = new DorisWindow("http://google.se", null);
 
 	/* Register on dbus */
 	try {

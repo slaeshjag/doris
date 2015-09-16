@@ -172,13 +172,13 @@ public class DorisWindow : Gtk.Window {
 		this.acc.connect(Gdk.keyval_from_name("P"), Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.SHIFT_MASK, Gtk.AccelFlags.VISIBLE, () => {this.webview.get_webview().run_javascript.begin("print();", null); return true;});
 	}
 
-	public DorisWindow() {
+	public DorisWindow(string uri, WebKit.URIRequest? uri_req) {
 		DorisWindow.count++;
 		this.id = DorisWindow.id_count++;
 		if (DorisWindow.windows == null)
 			DorisWindow.windows = new List<DorisWindow>();
 
-		this.webview = new BrowserWebView();
+		this.webview = new BrowserWebView(uri, uri_req);
 		this.nav = new DorisNavigate();
 		this.webview.new_uri.connect(this.changed_uri);
 		this.title = "Doris";
@@ -210,6 +210,7 @@ public class DorisWindow : Gtk.Window {
 		this.add_accelerators();
 		this.webview.title_changed.connect(set_window_title);
 		this.webview.new_download.connect(new_download);
+		this.get_webview().get_settings().set_user_agent_with_application_details("Doris", "0.1");
 		this.get_webview().load_changed.connect(reset_progressbar);
 		this.get_webview().insecure_content_detected.connect(insecure_content);
 		this.get_webview().resource_load_started.connect(res_load_started);
