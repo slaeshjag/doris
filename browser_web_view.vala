@@ -6,6 +6,7 @@ public class BrowserWebView : Gtk.ScrolledWindow {
 	public signal void title_changed(string title);
 	public signal void new_uri(string uri);
 	public signal void new_download(DorisDownload dd);
+	public signal void close();
 
 	public string? make_uri(string? uri) {
 		string clean = "";
@@ -37,6 +38,8 @@ public class BrowserWebView : Gtk.ScrolledWindow {
 		if (!rpd.is_mime_type_supported()) {
 			stdout.printf("Downloading %s\n", rpd.get_request().uri);
 			pd.download();
+			if (this.webview.get_back_forward_list().get_length() == 0)
+				this.webview.close();
 			return true;
 		}
 
