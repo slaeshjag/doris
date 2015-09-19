@@ -76,7 +76,7 @@ public class DorisWindow : Gtk.Window {
 	}
 
 	private void search_string(string search) {
-		this.get_webview().get_find_controller().search(search, 0, uint.MAX);
+		this.get_webview().get_find_controller().search(search, WebKit.FindOptions.CASE_INSENSITIVE | WebKit.FindOptions.WRAP_AROUND, uint.MAX);
 	}
 
 	private void search_next() {
