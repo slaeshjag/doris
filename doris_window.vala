@@ -265,6 +265,7 @@ public class DorisWindow : Gtk.Window {
 		this.title = "Doris";
 		this.ddl = new DorisDownloadList();
 		this.destroy.connect(destroy_handle);
+		this.webview.close.connect(destroy_handle);
 
 		/* Use a vbox to prepend stuff above the webview */
 		/* TODO: Replace with Gtk.Grid when we go GTK3-only. */

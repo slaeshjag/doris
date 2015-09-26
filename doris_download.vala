@@ -34,6 +34,7 @@ public class DorisDownload : Gtk.Frame {
 
 		this.stop.visible = false;
 		this.remove.visible = true;
+		this.label.set_text(Path.get_basename(this.download.get_destination()));
 		
 		try {
 			notification = new Notify.Notification("File Download", "Download of " + this.label.get_text() + " " + comment, "gtk-network");
@@ -91,6 +92,7 @@ public class DorisDownload : Gtk.Frame {
 		if (time_now == this.timestamp) {
 			this.downloaded_this_second = (uint) data + this.downloaded_this_second;
 		} else {
+			this.label.set_text(Path.get_basename(this.download.get_destination()));
 			this.download_rate = this.downloaded_this_second;
 			this.downloaded_this_second = 0;
 			this.timestamp = time_now;
