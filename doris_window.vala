@@ -229,6 +229,7 @@ public class DorisWindow : Gtk.Window {
 		this.acc.connect(Gdk.keyval_from_name("K"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.search.search_next(); return true;});
 		this.acc.connect(Gdk.keyval_from_name("M"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.launch_mediaplayer(false); return true;});
 		this.acc.connect(Gdk.keyval_from_name("M"), Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.SHIFT_MASK, Gtk.AccelFlags.VISIBLE, () => {this.launch_mediaplayer(true); return true;});
+		this.acc.connect(Gdk.keyval_from_name("space"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.focus_webview(); return true;});
 	}
 
 	public DorisWindow(string uri, WebKit.URIRequest? uri_req) {
