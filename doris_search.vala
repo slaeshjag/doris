@@ -47,8 +47,8 @@ public class DorisSearch : Gtk.Box {
 		this.prev.set_always_show_image(true);
 		this.next.set_always_show_image(true);
 
-		this.prev.activate.connect(() => this.search_prev());
-		this.next.activate.connect(() => this.search_next());
+		this.prev.clicked.connect(() => this.search_prev());
+		this.next.clicked.connect(() => this.search_next());
 		this.visible = false;
 	}
 }

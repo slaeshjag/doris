@@ -268,6 +268,7 @@ public class DorisWindow : Gtk.Window {
 		this.acc.connect(Gdk.keyval_from_name("T"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {spawn_bookmark_selection(); return true;});
 		this.acc.connect(Gdk.keyval_from_name("S"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {spawn_bookmark_add(); return true;});
 		this.acc.connect(Gdk.keyval_from_name("D"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {spawn_bookmark_delete(); return true;});
+		this.acc.connect(Gdk.keyval_from_name("space"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.focus_webview(); return true;});
 	}
 
 	public DorisWindow(string uri, WebKit.URIRequest? uri_req) {
