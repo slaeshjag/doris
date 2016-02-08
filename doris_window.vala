@@ -109,6 +109,42 @@ public class DorisWindow : Gtk.Window {
 		}
 	}
 
+	private void spawn_bookmark_selection() {
+		string id;
+
+		id = ((uint) Gdk.X11Window.get_xid(this.get_window())).to_string();
+		try {
+			Pid pid;
+			string args[3] = { "bookmark_select", null, null };
+			args[1] = id;
+			Process.spawn_async(null, args, null, SpawnFlags.SEARCH_PATH, null, out pid);
+		} catch (Error e) {
+			stderr.printf("Error: %s\n", e.message);
+		}
+	}
+
+	private void spawn_bookmark_add() {
+		try {
+			Pid pid;
+			string args[3] = { "bookmark_add", null, null };
+			args[1] = this.webview.get_uri();
+			Process.spawn_async(null, args, null, SpawnFlags.SEARCH_PATH, null, out pid);
+		} catch (Error e) {
+			stderr.printf("Error: %s\n", e.message);
+		}
+	}
+	
+	private void spawn_bookmark_delete() {
+		try {
+			Pid pid;
+			string args[2] = { "bookmark_delete", null};
+			Process.spawn_async(null, args, null, SpawnFlags.SEARCH_PATH, null, out pid);
+		} catch (Error e) {
+			stderr.printf("Error: %s\n", e.message);
+		}
+	}
+
+
 	private Gdk.FilterReturn gdk_handle_filter(Gdk.XEvent xe, Gdk.Event ge) {
 		X.Event *e = (void *) xe;
 		X.Atom type;
@@ -229,6 +265,9 @@ public class DorisWindow : Gtk.Window {
 		this.acc.connect(Gdk.keyval_from_name("K"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.search.search_next(); return true;});
 		this.acc.connect(Gdk.keyval_from_name("M"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {this.launch_mediaplayer(false); return true;});
 		this.acc.connect(Gdk.keyval_from_name("M"), Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.SHIFT_MASK, Gtk.AccelFlags.VISIBLE, () => {this.launch_mediaplayer(true); return true;});
+		this.acc.connect(Gdk.keyval_from_name("T"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {spawn_bookmark_selection(); return true;});
+		this.acc.connect(Gdk.keyval_from_name("S"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {spawn_bookmark_add(); return true;});
+		this.acc.connect(Gdk.keyval_from_name("D"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE, () => {spawn_bookmark_delete(); return true;});
 	}
 
 	public DorisWindow(string uri, WebKit.URIRequest? uri_req) {
