@@ -58,7 +58,8 @@ public class DorisDownload : Gtk.Frame {
 		string dir, path, file;
 		int i;
 
-		dir = Environment.get_user_special_dir(UserDirectory.DOWNLOAD);
+		if ((dir = Environment.get_variable("XDG_DOWNLOAD_DIR")) == null)
+			dir = Environment.get_user_special_dir(UserDirectory.DOWNLOAD);
 		for (i = 0; i < 256; i++) {
 			if (i == 0)
 				file = suggested_filename;
